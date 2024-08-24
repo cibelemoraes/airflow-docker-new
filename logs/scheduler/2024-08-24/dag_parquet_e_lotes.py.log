@@ -7178,3 +7178,31 @@ Traceback (most recent call last):
 ModuleNotFoundError: No module named 'astro'
 [2024-08-24T23:42:53.960+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/dag_parquet_e_lotes.py
 [2024-08-24T23:42:54.018+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/dag_parquet_e_lotes.py took 0.141 seconds
+[2024-08-24T23:43:24.575+0000] {processor.py:186} INFO - Started process (PID=36539) to work on /opt/airflow/dags/dag_parquet_e_lotes.py
+[2024-08-24T23:43:24.578+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/dag_parquet_e_lotes.py for tasks to queue
+[2024-08-24T23:43:24.585+0000] {logging_mixin.py:190} INFO - [2024-08-24T23:43:24.584+0000] {dagbag.py:587} INFO - Filling up the DagBag from /opt/airflow/dags/dag_parquet_e_lotes.py
+[2024-08-24T23:43:24.641+0000] {logging_mixin.py:190} INFO - [2024-08-24T23:43:24.629+0000] {dagbag.py:386} ERROR - Failed to import: /opt/airflow/dags/dag_parquet_e_lotes.py
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/dagbag.py", line 382, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/airflow/dags/dag_parquet_e_lotes.py", line 8, in <module>
+    from astro import sql as aql
+ModuleNotFoundError: No module named 'astro'
+[2024-08-24T23:43:24.646+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/dag_parquet_e_lotes.py
+[2024-08-24T23:43:24.750+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/dag_parquet_e_lotes.py took 0.194 seconds
+[2024-08-24T23:43:55.432+0000] {processor.py:186} INFO - Started process (PID=36601) to work on /opt/airflow/dags/dag_parquet_e_lotes.py
+[2024-08-24T23:43:55.445+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/dag_parquet_e_lotes.py for tasks to queue
+[2024-08-24T23:43:55.461+0000] {logging_mixin.py:190} INFO - [2024-08-24T23:43:55.460+0000] {dagbag.py:587} INFO - Filling up the DagBag from /opt/airflow/dags/dag_parquet_e_lotes.py
+[2024-08-24T23:43:55.583+0000] {logging_mixin.py:190} INFO - [2024-08-24T23:43:55.569+0000] {dagbag.py:386} ERROR - Failed to import: /opt/airflow/dags/dag_parquet_e_lotes.py
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/dagbag.py", line 382, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/airflow/dags/dag_parquet_e_lotes.py", line 8, in <module>
+    from astro import sql as aql
+ModuleNotFoundError: No module named 'astro'
+[2024-08-24T23:43:55.586+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/dag_parquet_e_lotes.py
+[2024-08-24T23:43:55.661+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/dag_parquet_e_lotes.py took 0.267 seconds
