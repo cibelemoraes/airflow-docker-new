@@ -44,3 +44,10 @@
 [2024-08-24T16:36:44.334+0000] {logging_mixin.py:190} INFO - [2024-08-24T16:36:44.332+0000] {dag.py:3211} INFO - Sync 1 DAGs
 [2024-08-24T16:36:44.597+0000] {logging_mixin.py:190} INFO - [2024-08-24T16:36:44.594+0000] {dag.py:4138} INFO - Setting next_dagrun for example_passing_params_via_test_command to 2024-08-24 16:35:00+00:00, run_after=2024-08-24 16:36:00+00:00
 [2024-08-24T16:36:44.782+0000] {processor.py:208} INFO - Processing /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_passing_params_via_test_command.py took 0.622 seconds
+[2024-08-24T16:37:32.877+0000] {processor.py:186} INFO - Started process (PID=448) to work on /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_passing_params_via_test_command.py
+[2024-08-24T16:37:32.906+0000] {processor.py:914} INFO - Processing file /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_passing_params_via_test_command.py for tasks to queue
+[2024-08-24T16:37:32.926+0000] {logging_mixin.py:190} INFO - [2024-08-24T16:37:32.926+0000] {dagbag.py:587} INFO - Filling up the DagBag from /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_passing_params_via_test_command.py
+[2024-08-24T16:37:33.221+0000] {processor.py:925} INFO - DAG(s) 'example_passing_params_via_test_command' retrieved from /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_passing_params_via_test_command.py
+[2024-08-24T16:37:33.448+0000] {logging_mixin.py:190} INFO - [2024-08-24T16:37:33.447+0000] {dag.py:3211} INFO - Sync 1 DAGs
+[2024-08-24T16:37:33.703+0000] {logging_mixin.py:190} INFO - [2024-08-24T16:37:33.702+0000] {dag.py:4138} INFO - Setting next_dagrun for example_passing_params_via_test_command to 2024-08-24 16:36:00+00:00, run_after=2024-08-24 16:37:00+00:00
+[2024-08-24T16:37:33.848+0000] {processor.py:208} INFO - Processing /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_passing_params_via_test_command.py took 1.055 seconds

@@ -54,3 +54,11 @@
 [2024-08-24T16:36:42.697+0000] {logging_mixin.py:190} INFO - [2024-08-24T16:36:42.696+0000] {dag.py:4138} INFO - Setting next_dagrun for read_dataset_event to 2024-08-23 00:00:00+00:00, run_after=2024-08-24 00:00:00+00:00
 [2024-08-24T16:36:42.732+0000] {logging_mixin.py:190} INFO - [2024-08-24T16:36:42.731+0000] {dag.py:4138} INFO - Setting next_dagrun for read_dataset_event_from_classic to 2024-08-23 00:00:00+00:00, run_after=2024-08-24 00:00:00+00:00
 [2024-08-24T16:36:42.814+0000] {processor.py:208} INFO - Processing /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_inlet_event_extra.py took 2.847 seconds
+[2024-08-24T16:37:26.864+0000] {processor.py:186} INFO - Started process (PID=442) to work on /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_inlet_event_extra.py
+[2024-08-24T16:37:26.878+0000] {processor.py:914} INFO - Processing file /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_inlet_event_extra.py for tasks to queue
+[2024-08-24T16:37:26.898+0000] {logging_mixin.py:190} INFO - [2024-08-24T16:37:26.896+0000] {dagbag.py:587} INFO - Filling up the DagBag from /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_inlet_event_extra.py
+[2024-08-24T16:37:28.765+0000] {processor.py:925} INFO - DAG(s) 'read_dataset_event_from_classic', 'read_dataset_event' retrieved from /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_inlet_event_extra.py
+[2024-08-24T16:37:28.840+0000] {logging_mixin.py:190} INFO - [2024-08-24T16:37:28.839+0000] {dag.py:3211} INFO - Sync 2 DAGs
+[2024-08-24T16:37:28.953+0000] {logging_mixin.py:190} INFO - [2024-08-24T16:37:28.952+0000] {dag.py:4138} INFO - Setting next_dagrun for read_dataset_event to 2024-08-23 00:00:00+00:00, run_after=2024-08-24 00:00:00+00:00
+[2024-08-24T16:37:28.972+0000] {logging_mixin.py:190} INFO - [2024-08-24T16:37:28.971+0000] {dag.py:4138} INFO - Setting next_dagrun for read_dataset_event_from_classic to 2024-08-23 00:00:00+00:00, run_after=2024-08-24 00:00:00+00:00
+[2024-08-24T16:37:29.075+0000] {processor.py:208} INFO - Processing /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_inlet_event_extra.py took 2.257 seconds
