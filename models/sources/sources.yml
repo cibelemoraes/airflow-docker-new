@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: retail
+    database: 'meu-primeiro-projet-403011'
+
+    tables:
+        - name: raw_invoices
+        - name: raw_country
