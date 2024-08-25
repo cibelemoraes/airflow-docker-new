@@ -1,0 +1,28 @@
+[2024-08-25T00:41:06.256+0000] {processor.py:186} INFO - Started process (PID=1609) to work on /opt/airflow/dags/retail.py
+[2024-08-25T00:41:06.260+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/retail.py for tasks to queue
+[2024-08-25T00:41:06.272+0000] {logging_mixin.py:190} INFO - [2024-08-25T00:41:06.271+0000] {dagbag.py:587} INFO - Filling up the DagBag from /opt/airflow/dags/retail.py
+[2024-08-25T00:41:06.810+0000] {logging_mixin.py:190} INFO - [2024-08-25T00:41:06.800+0000] {dagbag.py:386} ERROR - Failed to import: /opt/airflow/dags/retail.py
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/dagbag.py", line 382, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/airflow/dags/retail.py", line 8, in <module>
+    from astro import sql as aql
+ModuleNotFoundError: No module named 'astro'
+[2024-08-25T00:41:06.817+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/retail.py
+[2024-08-25T00:41:06.904+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/retail.py took 0.685 seconds
+[2024-08-25T00:41:37.196+0000] {processor.py:186} INFO - Started process (PID=1671) to work on /opt/airflow/dags/retail.py
+[2024-08-25T00:41:37.198+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/retail.py for tasks to queue
+[2024-08-25T00:41:37.202+0000] {logging_mixin.py:190} INFO - [2024-08-25T00:41:37.201+0000] {dagbag.py:587} INFO - Filling up the DagBag from /opt/airflow/dags/retail.py
+[2024-08-25T00:41:37.250+0000] {logging_mixin.py:190} INFO - [2024-08-25T00:41:37.243+0000] {dagbag.py:386} ERROR - Failed to import: /opt/airflow/dags/retail.py
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/dagbag.py", line 382, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/airflow/dags/retail.py", line 8, in <module>
+    from astro import sql as aql
+ModuleNotFoundError: No module named 'astro'
+[2024-08-25T00:41:37.253+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/retail.py
+[2024-08-25T00:41:37.299+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/retail.py took 0.120 seconds
