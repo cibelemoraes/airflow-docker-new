@@ -1,0 +1,253 @@
+import pandas as pd
+import os
+import psycopg2
+
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from datetime import datetime, timedelta
+from airflow.decorators import dag, task
+from airflow.utils.dates import days_ago
+from airflow.utils.task_group import TaskGroup
+from google.cloud import bigquery
+from google.cloud import storage
+
+from dotenv import load_dotenv
+from sqlalchemy import create_engine, text
+from airflow.models.baseoperator import chain
+from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.providers.google.cloud.transfers.local_to_gcs import LocalFilesystemToGCSOperator
+from airflow.providers.google.cloud.operators.bigquery import BigQueryCreateEmptyDatasetOperator
+
+# Carregar variáveis de ambiente
+load_dotenv(".env")
+
+# Credenciais do PostgreSQL
+POSTGRES_USER = os.getenv("POSTGRES_USER")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+POSTGRES_DB = os.getenv("POSTGRES_DB")
+POSTGRES_HOST = os.getenv("POSTGRES_HOST")
+POSTGRES_PORT = os.getenv("POSTGRES_PORT")
+
+# Definir o caminho para o arquivo de credenciais
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/path/to/service_account.json"
+
+BUCKET_NAME = 'pedrapagamentos'
+CSV_OUTPUT_FOLDER = 'csv_processado/'
+
+#Esse decorador define uma DAG no Airflow. Ele configura as propriedades da DAG
+@dag(
+    start_date=datetime(2024, 8, 24),
+    schedule=None,
+    catchup=False,
+    tags=['retail'],
+)
+def retail():
+    
+    @task
+    def download_parquet_bucket():
+        # Inicializar o cliente do Google Cloud Storage
+        storage_client = storage.Client()
+        bucket = storage_client.get_bucket(BUCKET_NAME)
+        blobs = bucket.list_blobs()
+
+        # Filtrar arquivos Parquet e processá-los
+        for blob in blobs:
+            if blob.name.endswith(".pq"):
+                print(f"Processando arquivo: {blob.name}")
+
+                # Baixar o arquivo localmente
+                local_path = f"/tmp/{blob.name}"
+                blob.download_to_filename(local_path)
+
+                # Ler o arquivo Parquet
+                df = pd.read_parquet(local_path)
+
+                # Ajuste dos tipos das colunas conforme necessário
+                df["order_number"] = pd.to_numeric(df["order_number"], errors="coerce")
+                df["terminal_id"] = pd.to_numeric(df["terminal_id"], errors="coerce")
+                df["terminal_serial_number"] = df["terminal_serial_number"].astype(str)
+                df["terminal_model"] = df["terminal_model"].astype(str)
+                df["terminal_type"] = df["terminal_type"].astype(str)
+                df["provider"] = df["provider"].astype(str)
+                df["technician_email"] = df["technician_email"].astype(str)
+                df["customer_phone"] = df["customer_phone"].astype(str)
+                df["customer_id"] = df["customer_id"].astype(str)
+                df["city"] = df["city"].astype(str)
+                df["country"] = df["country"].astype(str)
+                df["country_state"] = df["country_state"].astype(str)
+                df["zip_code"] = pd.to_numeric(df["zip_code"], errors="coerce")
+                df["street_name"] = df["street_name"].astype(str)
+                df["neighborhood"] = df["neighborhood"].astype(str)
+                df["complement"] = df["complement"].astype(str)
+                df["arrival_date"] = pd.to_datetime(df["arrival_date"], errors="coerce")
+                df["deadline_date"] = pd.to_datetime(df["deadline_date"], errors="coerce")
+                df["cancellation_reason"] = df["cancellation_reason"].astype(str)
+                df["last_modified_date"] = pd.to_datetime(
+                df["last_modified_date"], errors="coerce"
+                )
+                # Converter para CSV e salvar localmente
+                csv_output_path = f"/tmp/{blob.name.replace('.pq', '.csv')}"
+                df.to_csv(csv_output_path, index=False)
+
+                # Upload do CSV processado para o bucket na pasta especificada
+                csv_blob = bucket.blob(f"{CSV_OUTPUT_FOLDER}{os.path.basename(csv_output_path)}")
+                csv_blob.upload_from_filename(csv_output_path)
+
+                print(f"Arquivo CSV enviado para o bucket: {csv_blob.name}")
+
+    download_parquet_bucket()
+
+retail_dag = retail() #fim primeira tarefa
+        
+        
+
+@task.external_python(python='/usr/local/airflow/soda_venv/bin/python')
+def conectar_ao_postgresql(caminhos_csv):
+        conn_string = f"host={POSTGRES_HOST} port={POSTGRES_PORT} dbname={POSTGRES_DB} user={POSTGRES_USER} password={POSTGRES_PASSWORD}"
+        
+        def criar_tabela():
+            create_table_query = 
+            CREATE TABLE IF NOT EXISTS lotes (
+                order_number BIGINT NOT NULL,
+                terminal_id BIGINT NOT NULL,
+                terminal_serial_number VARCHAR(50),
+                terminal_model VARCHAR(50),
+                terminal_type VARCHAR(50),
+                provider VARCHAR(100),
+                technician_email VARCHAR(100),
+                customer_phone VARCHAR(20),
+                customer_id VARCHAR(50),
+                city VARCHAR(100),
+                country VARCHAR(100),
+                country_state VARCHAR(50),
+                zip_code BIGINT,
+                street_name VARCHAR(100),
+                neighborhood VARCHAR(100),
+                complement VARCHAR(100),
+                arrival_date TIMESTAMP,
+                deadline_date TIMESTAMP,
+                cancellation_reason VARCHAR(255),
+                last_modified_date TIMESTAMP,
+                PRIMARY KEY (order_number)
+            );
+            
+            cursor.execute(create_table_query)
+            conn.commit()
+        #persistindo os dados do csv na tabela LOTES do meu banco de dados 
+        def importar_csv_para_bd(caminho_csv):
+            if not os.path.exists(caminho_csv):
+                print(f"Arquivo CSV não encontrado: {caminho_csv}")
+                return
+
+            try:
+                with open(caminho_csv, mode="r", encoding="utf-8") as file:
+                    leitor_csv = pd.read_csv(file)
+                    
+                    insert_query = """
+                    INSERT INTO lotes (order_number, terminal_id, terminal_serial_number, terminal_model,
+                                       terminal_type, provider, technician_email, customer_phone,
+                                       customer_id, city, country, country_state, zip_code,
+                                       street_name, neighborhood, complement, arrival_date,
+                                       deadline_date, cancellation_reason, last_modified_date)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """
+                    for _, linha in leitor_csv.iterrows():
+                        cursor.execute(insert_query, tuple(linha))
+
+                conn.commit()
+                print(f"Dados do arquivo {caminho_csv} inseridos com sucesso.")
+            except Exception as e:
+                print(f"Erro ao inserir os dados: {e}")
+            finally:
+                cursor.close()
+
+        try:
+            conn = psycopg2.connect(conn_string)
+            cursor = conn.cursor()
+            criar_tabela()
+
+            for caminho_csv in caminhos_csv:
+                importar_csv_para_bd(caminho_csv)
+            
+        except Exception as e:
+            print(f"Erro na conexão com o PostgreSQL: {e}")
+        finally:
+            conn.close()
+
+            caminhos_csv = download_parquet_bucket()
+            conectar_ao_postgresql(caminhos_csv)
+
+   
+@task.uploud_datase(python='/usr/local/airflow/soda_venv/bin/python')
+    # Função para carregar os dados do PostgreSQL para o BigQuery
+def load_data_from_postgres_to_bigquery():
+        # Conexão ao PostgreSQL
+        pg_hook = PostgresHook(postgres_conn_id='postgres_default')
+        sql = "SELECT * FROM lotes"
+        df = pg_hook.get_pandas_df(sql)
+
+        # Conexão ao BigQuery
+        client = bigquery.Client.from_service_account_json('/path/to/service_account.json')
+        table_id = "meu-primeiro-projet-403011.pedrapagamentos.lotes"
+        job_config = bigquery.LoadJobConfig(
+            write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE
+        )
+
+        # Carregando os dados para o BigQuery
+        job = client.load_table_from_dataframe(df, table_id, job_config=job_config)
+        job.result()  # Espera a conclusão do job
+  
+    
+#função verifica se certas colunas obrigatórias não têm valores nulos após o carregamento dos dados.
+@task.external_python(python='/usr/local/airflow/soda_venv/bin/python')
+def check_non_null_columns(scan_name='check_non_null_columns', checks_subpath='sources'):
+    from include.soda.check_function import check
+    
+    # Definir as colunas obrigatórias que não podem ter valores nulos
+    columns_to_check = [
+        "order_number", 
+        "terminal_id", 
+        "customer_id", 
+        "arrival_date"
+    ]
+    
+    return check(scan_name, checks_subpath, columns_to_check=columns_to_check)
+
+#função verifica se os valores em determinadas colunas estão dentro de intervalos esperados (por exemplo, IDs ou datas)
+@task.external_python(python='/usr/local/airflow/soda_venv/bin/python')
+def check_value_ranges(scan_name='check_value_ranges', checks_subpath='sources'):
+    from include.soda.check_function import check
+    
+    # Definir os intervalos esperados para as colunas
+    value_ranges = {
+        "terminal_id": (1, 10000),
+        "zip_code": (1000, 99999),
+        "arrival_date": ("2023-01-01", "2024-12-31")
+    }
+    
+    return check(scan_name, checks_subpath, value_ranges=value_ranges)
+
+#função verifica se os valores em certas colunas que devem ser únicas (como IDs ou números de pedido) realmente são únicos
+@task.external_python(python='/usr/local/airflow/soda_venv/bin/python')
+def check_uniqueness(scan_name='check_uniqueness', checks_subpath='sources'):
+    from include.soda.check_function import check
+    
+    # Definir as colunas que precisam ser únicas
+    unique_columns = ["order_number", "terminal_id"]
+    
+    return check(scan_name, checks_subpath, unique_columns=unique_columns)
+
+
+
+chain(
+    download_parquet_bucketdef(),      # Função para baixar arquivos Parquet do bucket do GCS
+    Conectar_ao_PostgreSQL(),          # Função para conectar ao PostgreSQL no Docker
+    importar_csv_para_bd,              # Operador para criar o dataset no BigQuery
+    load_data_from_postgres_to_bigquery()#Persistindo os dados para o BigQuery
+    check_load(),                      # Função para verificar a carga dos dados
+    check_transform(),                 # Função para verificar a transformação dos dados
+    check_report()                     # Função para verificar os relatórios finais gerados
+)
+
+dag_etl_data_process()
+
