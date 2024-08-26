@@ -1,4 +1,8 @@
 FROM quay.io/astronomer/astro-runtime:12.0.0
+USER root
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
 
 # install soda into a virtual environment
 RUN python -m venv soda_venv && source soda_venv/bin/activate && \

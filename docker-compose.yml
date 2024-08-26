@@ -43,7 +43,6 @@
 #                                Default: ''
 #
 # Feel free to modify this file to suit your needs.
----
 x-airflow-common:
   # In order to add custom dependencies or upgrade provider packages you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
@@ -51,6 +50,7 @@ x-airflow-common:
   &airflow-common
   image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.10.0}
   # build: .
+  env_file: .env  # <-- Adicione esta linha
   environment: &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -84,7 +84,7 @@ x-airflow-common:
       condition: service_healthy
 
 services:
-  postgres:
+   postgres:
     image: postgres:13
     environment:
       POSTGRES_USER: airflow
@@ -93,29 +93,41 @@ services:
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
     ports:
-      - "5436:5432" # Porta alterada para 5436 no host
+      - "5436:5432"
+    networks:
+      - my-network
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "airflow" ]
+      test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 10s
       retries: 5
       start_period: 5s
     restart: always
 
   redis:
-    # Redis is limited to 7.2-bookworm due to licencing change
-    # https://redis.io/blog/redis-adopts-dual-source-available-licensing/
     image: redis:7.2-bookworm
     expose:
       - 6379
+    networks:
+      - my-network
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 30s
       retries: 50
       start_period: 30s
     restart: always
 
+networks:
+  my-network:
+    external: true
+
   airflow-webserver:
+    image: apache/airflow:2.5.0
+    env_file: .env
+    environment:
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    networks:
+      - my-network
     <<: *airflow-common
     command: webserver
     ports:
@@ -135,6 +147,7 @@ services:
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
+    env_file: .env  # <-- Adicione esta linha
     healthcheck:
       test: [ "CMD", "curl", "--fail", "http://localhost:8974/health" ]
       interval: 30s
@@ -147,9 +160,17 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+  networks:
+  my-network:
+    external: true
+
+volumes:
+  postgres-db-volume:
+
   airflow-worker:
     <<: *airflow-common
     command: celery worker
+    env_file: .env  # <-- Adicione esta linha
     healthcheck:
       # yamllint disable rule:line-length
       test:
@@ -173,6 +194,7 @@ services:
   airflow-triggerer:
     <<: *airflow-common
     command: triggerer
+    env_file: .env  # <-- Adicione esta linha
     healthcheck:
       test: [ "CMD-SHELL", 'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"' ]
       interval: 30s
@@ -187,6 +209,7 @@ services:
 
   airflow-init:
     <<: *airflow-common
+    env_file: .env  # <-- Adicione esta linha
     entrypoint: /bin/bash
     # yamllint disable rule:line-length
     command:
@@ -251,6 +274,7 @@ services:
 
   airflow-cli:
     <<: *airflow-common
+    env_file: .env  # <-- Adicione esta linha
     profiles:
       - debug
     environment:
@@ -268,6 +292,7 @@ services:
   flower:
     <<: *airflow-common
     command: celery flower
+    env_file: .env  # <-- Adicione esta linha
     profiles:
       - flower
     ports:
