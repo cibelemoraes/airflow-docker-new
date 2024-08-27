@@ -11,6 +11,11 @@ from airflow.utils.task_group import TaskGroup
 from google.cloud import bigquery
 from google.cloud import storage
 
+from astro import sql as aql
+from astro.files import File
+from astro.sql.table import Table, Metadata
+from astro.constants import FileType
+
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from airflow.models.baseoperator import chain
@@ -106,7 +111,7 @@ def conectar_ao_postgresql(caminhos_csv):
         conn_string = f"host={POSTGRES_HOST} port={POSTGRES_PORT} dbname={POSTGRES_DB} user={POSTGRES_USER} password={POSTGRES_PASSWORD}"
         
         def criar_tabela():
-            create_table_query = 
+            create_table_query = """
             CREATE TABLE IF NOT EXISTS lotes (
                 order_number BIGINT NOT NULL,
                 terminal_id BIGINT NOT NULL,
@@ -129,7 +134,7 @@ def conectar_ao_postgresql(caminhos_csv):
                 cancellation_reason VARCHAR(255),
                 last_modified_date TIMESTAMP,
                 PRIMARY KEY (order_number)
-            );
+            );"""
             
             cursor.execute(create_table_query)
             conn.commit()
@@ -249,5 +254,5 @@ chain(
     check_report()                     # Função para verificar os relatórios finais gerados
 )
 
-dag_etl_data_process()
 
+dag_etl_data_process()

@@ -16,3 +16,4 @@ include/dbt/logs
 include/dbt/.user.yml
 *.log
 logs/scheduler/latest/
+logs/dag_processor_manager/dag_processor_manager.log
