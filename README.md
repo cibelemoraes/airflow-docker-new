@@ -1,48 +1,99 @@
-Overview
-========
+#ETL Pipeline com Airflow, PostgreSQL, e BigQuery
 
-Welcome to Astronomer! This project was generated after you ran 'astro dev init' using the Astronomer CLI. This readme describes the contents of the project, as well as how to run Apache Airflow on your local machine.
+Este projeto implementa um pipeline ETL usando Apache Airflow para processar e mover dados entre Google Cloud Storage (GCS), PostgreSQL e BigQuery.
 
-Project Contents
-================
+##Visão Geral
+Este pipeline executa as seguintes etapas:
 
-Your Astro project contains the following files and folders:
+Download de Arquivos Parquet do GCS: Baixa e processa arquivos Parquet do Google Cloud Storage e os converte para CSV.
+Carga de Dados no PostgreSQL: Insere os dados CSV em uma tabela PostgreSQL.
+Transferência de Dados para o BigQuery: Carrega os dados do PostgreSQL para o BigQuery.
+Verificações de Qualidade dos Dados: Executa validações nos dados processados.
 
-- dags: This folder contains the Python files for your Airflow DAGs. By default, this directory includes one example DAG:
-    - `example_astronauts`: This DAG shows a simple ETL pipeline example that queries the list of astronauts currently in space from the Open Notify API and prints a statement for each astronaut. The DAG uses the TaskFlow API to define tasks in Python, and dynamic task mapping to dynamically print a statement for each astronaut. For more on how this DAG works, see our [Getting started tutorial](https://www.astronomer.io/docs/learn/get-started-with-airflow).
-- Dockerfile: This file contains a versioned Astro Runtime Docker image that provides a differentiated Airflow experience. If you want to execute other commands or overrides at runtime, specify them here.
-- include: This folder contains any additional files that you want to include as part of your project. It is empty by default.
-- packages.txt: Install OS-level packages needed for your project by adding them to this file. It is empty by default.
-- requirements.txt: Install Python packages needed for your project by adding them to this file. It is empty by default.
-- plugins: Add custom or community plugins for your project to this file. It is empty by default.
-- airflow_settings.yaml: Use this local-only file to specify Airflow Connections, Variables, and Pools instead of entering them in the Airflow UI as you develop DAGs in this project.
+##Utilização do Astro
+Este projeto foi gerado com o Astronomer CLI e inclui pastas como dags (contendo DAGs do Airflow), include, plugins, 
+além dos arquivos Dockerfile, packages.txt, requirements.txt e airflow_settings.yaml. Para rodar o Airflow localmente,
+use astro dev start, que inicia contêineres Docker para o banco de dados, servidor web, agendador e triggerer. 
+A interface do Airflow estará acessível em http://localhost:8080. Para implantar no Astronomer, consulte a documentação oficial.
 
-Deploy Your Project Locally
-===========================
+##Estrutura do Projeto
 
-1. Start Airflow on your local machine by running 'astro dev start'.
+DAGs: As DAGs são definidas no Airflow para gerenciar o fluxo de trabalho.
+Tasks: As tarefas do pipeline incluem download, transformação e validações.
+Conexões: O pipeline utiliza conexões com PostgreSQL e BigQuery.
 
-This command will spin up 4 Docker containers on your machine, each for a different Airflow component:
+###Pré-requisitos
+Python 3.7+: Certifique-se de ter o Python instalado.
+Airflow: Siga as instruções para instalar o Airflow e configurar o ambiente.
+Google Cloud SDK: Para acessar o GCS e BigQuery, você precisa do SDK do Google Cloud.
 
-- Postgres: Airflow's Metadata Database
-- Webserver: The Airflow component responsible for rendering the Airflow UI
-- Scheduler: The Airflow component responsible for monitoring and triggering tasks
-- Triggerer: The Airflow component responsible for triggering deferred tasks
+##Instalação
 
-2. Verify that all 4 Docker containers were created by running 'docker ps'.
+Clone o repositório:
+```bash
+git clone https://github.com/seu-usuario/seu-repositorio.git
+cd seu-repositorio
+```
+Crie um ambiente virtual e instale as dependências:
+```bash
+python -m venv venv
+source venv/bin/activate  # No Windows: venv\Scripts\activate
+pip install -r requirements.txt
 
-Note: Running 'astro dev start' will start your project with the Airflow Webserver exposed at port 8080 and Postgres exposed at port 5432. If you already have either of those ports allocated, you can either [stop your existing Docker containers or change the port](https://www.astronomer.io/docs/astro/cli/troubleshoot-locally#ports-are-not-available-for-my-local-airflow-webserver).
+```
+Instale pacotes adicionais:
+```bash
+pip install -r packages.txt
 
-3. Access the Airflow UI for your local Airflow project. To do so, go to http://localhost:8080/ and log in with 'admin' for both your Username and Password.
+```
+Configure as credenciais do Google Cloud:
+Salve o arquivo de conta de serviço JSON na raiz do projeto e defina a variável de ambiente:
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service_account.json"
+```
+Atualize o arquivo .env com as credenciais do PostgreSQL:
 
-You should also be able to access your Postgres Database at 'localhost:5432/postgres'.
+```bash
+POSTGRES_USER=seu_usuario
+POSTGRES_PASSWORD=sua_senha
+POSTGRES_DB=seu_db
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
 
-Deploy Your Project to Astronomer
-=================================
+```
+##Execução
+Para iniciar o pipeline:
+```bash
+airflow standalone  # Inicializa o Airflow no modo standalone
+```
+No Airflow UI, ative a DAG chamada dag_etl_data_process para iniciar o processo.
 
-If you have an Astronomer account, pushing code to a Deployment on Astronomer is simple. For deploying instructions, refer to Astronomer documentation: https://www.astronomer.io/docs/astro/deploy-code/
+##Estrutura do Pipeline
+O pipeline consiste nas seguintes etapas, organizadas em cadeia:
+```bash
+chain(
+    download_parquet_bucketdef(),
+    Conectar_ao_PostgreSQL(),
+    importar_csv_para_bd,
+    load_data_from_postgres_to_bigquery(),
+    check_load(),
+    check_transform(),
+    check_report()
+)
 
-Contact
-=======
+```
+##Arquivos de Dependências
 
-The Astronomer CLI is maintained with love by the Astronomer team. To report a bug or suggest a change, reach out to our support.
+requirements.txt: Inclui as bibliotecas essenciais para o projeto.
+packages.txt: Lista pacotes adicionais necessários para a execução.
+
+##Atualizando Dependências
+
+Certifique-se de que os arquivos requirements.txt e packages.txt incluam as bibliotecas necessárias. Você pode atualizá-los com:
+```bash
+pip freeze > requirements.txt
+
+```
+
+
+
